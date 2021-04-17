@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Create Security Group2"
+
+###  Parameters ###
+Parameters:
+  SGName: 
+    Type: String 
+    Default: ""
+    Description: "Name of Security Group"
+
+  VpcId: 
+    Type: String
+    Default: "vpc-0b708419733a6dd8c"
+  
+  EnvTag: 
+    Type: String 
+    Default: "Dev"
+    Description: "Environment Tag"
+    AllowedValues: 
+      - Dev
+      - Test 
+      - Prod
+
+
+### Resources ### 
+Resources:
+  SecurityGroup2:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupName: !Ref SGName 
+      GroupDescription: "Apache Security Group"
+      VpcId: !Ref VpcId
+      SecurityGroupEgress: 
+      - CidrIp: "0.0.0.0/0"
+        IpProtocol: -1 
+      SecurityGroupIngress: 
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp 
+        FromPort: 80
+        ToPort: 80
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp 
+        FromPort: 22
+        ToPort: 22
+      - CidrIp: 0.0.0.0/0
+        IpProtocol: tcp 
+        FromPort: 443
+        ToPort: 443
+      Tags: 
+      - Key: "Name"
+        Value: !Ref SGName
+      - Key: "Env"
+        Value: !Ref EnvTag      
+
+### Outputs ### 
+Outputs:
+  SecurityGroupId: 
+    Value: !Ref SecurityGroup2
+    Description: "Security Group Id"
+    Export:
+      Name: SecurityGroup2

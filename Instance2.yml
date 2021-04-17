@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Creat EC2-Instance"
+
+### Parameters ###
+Parameters:
+  ImageId: 
+    Type: String
+    Default: ""
+    Description: "EC2 Image Id"
+
+  InstanceType:
+    Type: String
+    Default: "t2.micro"
+    Description: "EC2 Type"
+    AllowedValues:
+      - t2.micro
+      - t2.nano
+      - t2.small
+
+  SubnetId: 
+    Type: String
+    Default: "subnet-01f9888281b1d54b3"
+    Description: "Subnet Id"
+  
+  EC2NameTag: 
+    Type: String
+    Default: "Apache-Test"
+    Description: "EC2 Name"
+
+  EnvTag: 
+    Type: String
+    Default: "Dev"
+    Description: "EC2 Environment"
+    AllowedValues:
+      - Dev
+      - Test
+      - Prod   
+ 
+  SSHKeyName: 
+    Type: String
+    Default: "bastion-key"
+    Description: "SSH Key Name"
+  
+### Resourses ### 
+Resources:
+  Instance2:
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: !Ref ImageId 
+      InstanceType: !Ref InstanceType
+      SubnetId: !Ref SubnetId
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash
+            sudo yum update -y
+            sudo yum install httpd -y 
+            sudo echo "Hello World!" >> /var/www/html/index.html
+            sudo systemctl start httpd -y 
+      BlockDeviceMappings:
+      - DeviceName: "/dev/xvda"
+        Ebs:
+          VolumeType: "gp2"
+          DeleteOnTermination: "true"
+          VolumeSize: "20"
+      Tags: 
+        - Key: "Name"
+          Value: !Ref EC2NameTag
+        - Key: "Env"
+          Value: !Ref EnvTag 
+      SecurityGroupIds:
+        - !ImportValue  Securitygroup2
+      KeyName: !Ref SSHKeyName 
+
+
+### Outputs ### 
+Outputs:
+  InastanceId: 
+    Value: !Ref Instance2
+    Description: "Inastance Id"
+  InstancePublicIp:
+    Value: !GetAtt Instance2.PublicIp
+    Description: "Inastance Public Ip"
